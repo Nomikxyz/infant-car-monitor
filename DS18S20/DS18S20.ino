@@ -20,8 +20,9 @@ int DS18S20_Pin = 2; //DS18S20 Signal pin on digital 2
 OneWire ds(DS18S20_Pin);  // on digital pin 2
 
 
-int timeelapsed= 120000; //this is the number (in milliseconds) that will elapse before another message is sent. 
-int maximumruns= 5;
+
+int maxRuns= 11;
+int runs= 0;
 void setup() {
   Serial.begin(9600);
   
@@ -49,7 +50,10 @@ void setup() {
   delay(1000);
 
   Serial.println("Setup complete.\n");
+
+  
 }
+
 
 
 void loop(void) {
@@ -58,13 +62,15 @@ void loop(void) {
 
   float temperature = getTemp();
   Serial.println(temperature); //print the temp
-  int sensorValue = digitalRead(7); //the motion sensor
+  int sensorValue = digitalRead(1); //the motion sensor
+
   
-if (sensorValue == HIGH && temperature>23) { //if the motion sensor and temperature detect dangerous
-                                             //conditions, trigger a print function and text message
+if (sensorValue == HIGH && temperature>23 && runs<=maxRuns) { //if the motion sensor and temperature detect dangerous
+                                                             //conditions, trigger a print function and text message
 
   Serial.println ("Dangerous conditions");
- TembooChoreo SendSMSChoreo(client);
+ 
+    TembooChoreo SendSMSChoreo(client);
 
     // Invoke the Temboo client
     SendSMSChoreo.begin();
@@ -74,17 +80,8 @@ if (sensorValue == HIGH && temperature>23) { //if the motion sensor and temperat
     SendSMSChoreo.setAppKeyName(TEMBOO_APP_KEY_NAME);
     SendSMSChoreo.setAppKey(TEMBOO_APP_KEY);
 
-    // Set Choreo inputs
-    String AuthTokenValue = "e5e2a6dcb56e7d7b44a5d2ee27a10c70";
-    SendSMSChoreo.addInput("AuthToken", AuthTokenValue);
-    String BodyValue = "ALERT- Dangerous conditions detected.";
-    SendSMSChoreo.addInput("Body", BodyValue);
-    String ToValue = "+12017465282";
-    SendSMSChoreo.addInput("To", ToValue);
-    String AccountSIDValue = "AC31fb1c701bc8070a9995d9db7b5de8ef";
-    SendSMSChoreo.addInput("AccountSID", AccountSIDValue);
-    String FromValue = "+17472322264";
-    SendSMSChoreo.addInput("From", FromValue);
+    // Set profile to use for execution
+    SendSMSChoreo.setProfile("ada");
 
     // Identify the Choreo to run
     SendSMSChoreo.setChoreo("/Library/Twilio/SMSMessages/SendSMS");
@@ -97,16 +94,22 @@ if (sensorValue == HIGH && temperature>23) { //if the motion sensor and temperat
       Serial.print(c);
     }
     SendSMSChoreo.close();
+    Serial.println("\nWaiting...\n");
+  delay(1000); // wait 30 seconds between SendSMS calls
+
   }
 
-  Serial.println("\nWaiting...\n");
-  delay(30000); // wait 30 seconds between SendSMS calls
+  
 
-}
 else if (sensorValue==LOW && temperature<23) {
 
   Serial.println ("No dangerous conditions. ");
-} 
+}
+
+ else if (runs>maxRuns) {
+  Serial.println ("Alert! Maximum alerts sent to mobile device.");
+ }
+ 
   delay(5000); //just here to slow down the output so it is easier to read
 
  
