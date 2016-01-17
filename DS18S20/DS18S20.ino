@@ -15,6 +15,7 @@ Adafruit_CC3000 cc3k = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, 
 
 Adafruit_CC3000_Client client;
 int DS18S20_Pin = 2; //DS18S20 Signal pin on digital 2
+int sensorValue= 5; //motion sensor
 
 //Temperature chip i/o
 OneWire ds(DS18S20_Pin);  // on digital pin 2
@@ -24,8 +25,8 @@ OneWire ds(DS18S20_Pin);  // on digital pin 2
 int maxRuns= 11;
 int runs= 0;
 void setup() {
-  Serial.begin(9600);
-  
+  Serial.begin(115200);
+  pinMode(sensorValue, INPUT);
   // For debugging, wait until the serial console is connected
   delay(4000);
   while(!Serial);
@@ -62,10 +63,10 @@ void loop(void) {
 
   float temperature = getTemp();
   Serial.println(temperature); //print the temp
-  int sensorValue = digitalRead(1); //the motion sensor
+  
 
   
-if (sensorValue == HIGH && temperature>23 && runs<=maxRuns) { //if the motion sensor and temperature detect dangerous
+if (digitalRead(sensorValue) == HIGH && temperature>25 && runs<=maxRuns && temperature!=85) { //if the motion sensor and temperature detect dangerous
                                                              //conditions, trigger a print function and text message
 
   Serial.println ("Dangerous conditions");
@@ -95,13 +96,14 @@ if (sensorValue == HIGH && temperature>23 && runs<=maxRuns) { //if the motion se
     }
     SendSMSChoreo.close();
     Serial.println("\nWaiting...\n");
-  delay(1000); // wait 30 seconds between SendSMS calls
+    runs++;
+  delay(1000); // wait 1 second between SendSMS calls
 
   }
 
   
 
-else if (sensorValue==LOW && temperature<23) {
+else if (digitalRead(sensorValue) && temperature<25) {
 
   Serial.println ("No dangerous conditions. ");
 }
@@ -109,7 +111,9 @@ else if (sensorValue==LOW && temperature<23) {
  else if (runs>maxRuns) {
   Serial.println ("Alert! Maximum alerts sent to mobile device.");
  }
- 
+ else if (temperature==85) {
+  Serial.println ("Electrical fault detected- ignoring this output");
+ }
   delay(5000); //just here to slow down the output so it is easier to read
 
  
