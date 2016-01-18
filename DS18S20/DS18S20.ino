@@ -63,10 +63,13 @@ void loop(void) {
 
   float temperature = getTemp();
   Serial.println(temperature); //print the temp
+  digitalRead(sensorValue);
+  Serial.println("Current motion levels"+sensorValue);
+  Serial.println(runs + "runs");
   
 
   
-if (digitalRead(sensorValue) == HIGH && temperature>25 && runs<=maxRuns && temperature!=85) { //if the motion sensor and temperature detect dangerous
+if (digitalRead(sensorValue) == HIGH && temperature>25 && runs<=maxRuns && temperature!=85 || digitalRead(sensorValue) ==HIGH && temperature<13 && runs<=maxRuns) { //if the motion sensor and temperature detect dangerous
                                                              //conditions, trigger a print function and text message
 
   Serial.println ("Dangerous conditions");
@@ -103,7 +106,7 @@ if (digitalRead(sensorValue) == HIGH && temperature>25 && runs<=maxRuns && tempe
 
   
 
-else if (digitalRead(sensorValue) && temperature<25) {
+else if (digitalRead(sensorValue) && temperature<25 || digitalRead(sensorValue) && temperature>13) {
 
   Serial.println ("No dangerous conditions. ");
 }
