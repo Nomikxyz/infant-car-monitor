@@ -1,4 +1,4 @@
-#infant-car-monitor
+# infant-car-monitor
 
 This project was submitted to a local science/engineering fair. It's a simplified child monitor that uses an Arduino Uno, Adafruit Wifi Shield, and temperature/motion sensors to detect the movement of a child or pet in a car and then send an SMS message to a preset phone number alerting a parent/pet owner that their car is dangerously hot. 
 
